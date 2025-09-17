@@ -29,5 +29,5 @@ jobs:
         with:
           install_command: cd webview-ui && npm ci
           build_command: cd webview-ui && npm run build-storybook
-          path: webview-ui/storybook-static
+          path: ./webview-ui/storybook-static
           checkout: false
