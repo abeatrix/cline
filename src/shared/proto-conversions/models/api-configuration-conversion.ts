@@ -4,6 +4,7 @@ import {
 	OpenRouterModelInfo,
 	ModelsApiConfiguration as ProtoApiConfiguration,
 	ApiProvider as ProtoApiProvider,
+	OcaModelInfo as ProtoOcaModelInfo,
 	ThinkingConfig,
 } from "@shared/proto/cline/models"
 import {
@@ -13,6 +14,7 @@ import {
 	OpenAiCompatibleModelInfo as AppOpenAiCompatibleModelInfo,
 	BedrockModelId,
 	ModelInfo,
+	OcaModelInfo,
 } from "../../api"
 
 // Convert application ThinkingConfig to proto ThinkingConfig
@@ -82,6 +84,53 @@ function convertProtoToModelInfo(info: OpenRouterModelInfo | undefined): ModelIn
 		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
 		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
 		tiers: info.tiers.length > 0 ? info.tiers : undefined,
+	}
+}
+
+// Convert application ModelInfo to proto OcaModelInfo
+function convertOcaModelInfoToProtoOcaModelInfo(info: OcaModelInfo | undefined): ProtoOcaModelInfo | undefined {
+	if (!info) {
+		return undefined
+	}
+
+	return {
+		maxTokens: info.maxTokens,
+		contextWindow: info.contextWindow,
+		supportsImages: info.supportsImages,
+		supportsPromptCache: info.supportsPromptCache ?? false,
+		inputPrice: info.inputPrice,
+		outputPrice: info.outputPrice,
+		cacheWritesPrice: info.cacheWritesPrice,
+		cacheReadsPrice: info.cacheReadsPrice,
+		description: info.description,
+		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
+		surveyContent: info.surveyContent,
+		surveyId: info.surveyId,
+		banner: info.banner,
+		modelName: info.modelName,
+	}
+}
+
+// Convert proto OpenRouterModelInfo to application ModelInfo
+function convertProtoOcaModelInfoToOcaModelInfo(info: ProtoOcaModelInfo | undefined): OcaModelInfo | undefined {
+	if (!info) {
+		return undefined
+	}
+
+	return {
+		maxTokens: info.maxTokens,
+		contextWindow: info.contextWindow,
+		supportsImages: info.supportsImages,
+		supportsPromptCache: info.supportsPromptCache,
+		inputPrice: info.inputPrice,
+		outputPrice: info.outputPrice,
+		cacheWritesPrice: info.cacheWritesPrice,
+		cacheReadsPrice: info.cacheReadsPrice,
+		description: info.description,
+		surveyContent: info.surveyContent,
+		surveyId: info.surveyId,
+		banner: info.banner,
+		modelName: info.modelName,
 	}
 }
 
@@ -256,6 +305,16 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 			return ProtoApiProvider.ZAI
 		case "dify":
 			return ProtoApiProvider.DIFY
+		case "oca":
+			return ProtoApiProvider.OCA
+		case "aihubmix":
+			return ProtoApiProvider.AIHUBMIX
+		case "minimax":
+			return ProtoApiProvider.MINIMAX
+		case "hicap":
+			return ProtoApiProvider.HICAP
+		case "nousResearch":
+			return ProtoApiProvider.NOUSRESEARCH
 		default:
 			return ProtoApiProvider.ANTHROPIC
 	}
@@ -332,8 +391,18 @@ export function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvid
 			return "vercel-ai-gateway"
 		case ProtoApiProvider.ZAI:
 			return "zai"
+		case ProtoApiProvider.HICAP:
+			return "hicap"
 		case ProtoApiProvider.DIFY:
 			return "dify"
+		case ProtoApiProvider.OCA:
+			return "oca"
+		case ProtoApiProvider.AIHUBMIX:
+			return "aihubmix"
+		case ProtoApiProvider.MINIMAX:
+			return "minimax"
+		case ProtoApiProvider.NOUSRESEARCH:
+			return "nousResearch"
 		default:
 			return "anthropic"
 	}
@@ -358,6 +427,7 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		awsSessionToken: config.awsSessionToken,
 		awsRegion: config.awsRegion,
 		awsUseCrossRegionInference: config.awsUseCrossRegionInference,
+		awsUseGlobalInference: config.awsUseGlobalInference,
 		awsBedrockUsePromptCache: config.awsBedrockUsePromptCache,
 		awsUseProfile: config.awsUseProfile,
 		awsAuthentication: config.awsAuthentication,
@@ -414,6 +484,16 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		zaiApiKey: config.zaiApiKey,
 		difyApiKey: config.difyApiKey,
 		difyBaseUrl: config.difyBaseUrl,
+		ocaBaseUrl: config.ocaBaseUrl,
+		minimaxApiKey: config.minimaxApiKey,
+		minimaxApiLine: config.minimaxApiLine,
+		nousResearchApiKey: config.nousResearchApiKey,
+		ocaMode: config.ocaMode,
+		aihubmixApiKey: config.aihubmixApiKey,
+		aihubmixBaseUrl: config.aihubmixBaseUrl,
+		aihubmixAppCode: config.aihubmixAppCode,
+		hicapApiKey: config.hicapApiKey,
+		hicapModelId: config.hicapModelId,
 
 		// Plan mode configurations
 		planModeApiProvider: config.planModeApiProvider ? convertApiProviderToProto(config.planModeApiProvider) : undefined,
@@ -445,8 +525,13 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		planModeHuaweiCloudMaasModelId: config.planModeHuaweiCloudMaasModelId,
 		planModeHuaweiCloudMaasModelInfo: convertModelInfoToProtoOpenRouter(config.planModeHuaweiCloudMaasModelInfo),
 		planModeSapAiCoreDeploymentId: config.planModeSapAiCoreDeploymentId,
-		planModeVercelAiGatewayModelId: config.planModeVercelAiGatewayModelId,
-		planModeVercelAiGatewayModelInfo: convertModelInfoToProtoOpenRouter(config.planModeVercelAiGatewayModelInfo),
+		planModeOcaModelId: config.planModeOcaModelId,
+		planModeOcaModelInfo: convertOcaModelInfoToProtoOcaModelInfo(config.planModeOcaModelInfo),
+		planModeAihubmixModelId: config.planModeAihubmixModelId,
+		planModeAihubmixModelInfo: convertOpenAiCompatibleModelInfoToProto(config.planModeAihubmixModelInfo),
+		planModeHicapModelId: config.planModeHicapModelId,
+		planModeHicapModelInfo: convertModelInfoToProtoOpenRouter(config.planModeHicapModelInfo),
+		planModeNousResearchModelId: config.planModeNousResearchModelId,
 
 		// Act mode configurations
 		actModeApiProvider: config.actModeApiProvider ? convertApiProviderToProto(config.actModeApiProvider) : undefined,
@@ -478,8 +563,13 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		actModeHuaweiCloudMaasModelId: config.actModeHuaweiCloudMaasModelId,
 		actModeHuaweiCloudMaasModelInfo: convertModelInfoToProtoOpenRouter(config.actModeHuaweiCloudMaasModelInfo),
 		actModeSapAiCoreDeploymentId: config.actModeSapAiCoreDeploymentId,
-		actModeVercelAiGatewayModelId: config.actModeVercelAiGatewayModelId,
-		actModeVercelAiGatewayModelInfo: convertModelInfoToProtoOpenRouter(config.actModeVercelAiGatewayModelInfo),
+		actModeOcaModelId: config.actModeOcaModelId,
+		actModeOcaModelInfo: convertOcaModelInfoToProtoOcaModelInfo(config.actModeOcaModelInfo),
+		actModeAihubmixModelId: config.actModeAihubmixModelId,
+		actModeAihubmixModelInfo: convertOpenAiCompatibleModelInfoToProto(config.actModeAihubmixModelInfo),
+		actModeHicapModelId: config.actModeHicapModelId,
+		actModeHicapModelInfo: convertModelInfoToProtoOpenRouter(config.actModeHicapModelInfo),
+		actModeNousResearchModelId: config.actModeNousResearchModelId,
 	}
 }
 
@@ -502,6 +592,7 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		awsSessionToken: protoConfig.awsSessionToken,
 		awsRegion: protoConfig.awsRegion,
 		awsUseCrossRegionInference: protoConfig.awsUseCrossRegionInference,
+		awsUseGlobalInference: protoConfig.awsUseGlobalInference,
 		awsBedrockUsePromptCache: protoConfig.awsBedrockUsePromptCache,
 		awsUseProfile: protoConfig.awsUseProfile,
 		awsAuthentication: protoConfig.awsAuthentication,
@@ -558,6 +649,16 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		zaiApiKey: protoConfig.zaiApiKey,
 		difyApiKey: protoConfig.difyApiKey,
 		difyBaseUrl: protoConfig.difyBaseUrl,
+		ocaBaseUrl: protoConfig.ocaBaseUrl,
+		ocaMode: protoConfig.ocaMode,
+		aihubmixApiKey: protoConfig.aihubmixApiKey,
+		aihubmixBaseUrl: protoConfig.aihubmixBaseUrl,
+		aihubmixAppCode: protoConfig.aihubmixAppCode,
+		minimaxApiKey: protoConfig.minimaxApiKey,
+		minimaxApiLine: protoConfig.minimaxApiLine,
+		hicapApiKey: protoConfig.hicapApiKey,
+		hicapModelId: protoConfig.hicapModelId,
+		nousResearchApiKey: protoConfig.nousResearchApiKey,
 
 		// Plan mode configurations
 		planModeApiProvider:
@@ -592,8 +693,13 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		planModeHuaweiCloudMaasModelId: protoConfig.planModeHuaweiCloudMaasModelId,
 		planModeHuaweiCloudMaasModelInfo: convertProtoToModelInfo(protoConfig.planModeHuaweiCloudMaasModelInfo),
 		planModeSapAiCoreDeploymentId: protoConfig.planModeSapAiCoreDeploymentId,
-		planModeVercelAiGatewayModelId: protoConfig.planModeVercelAiGatewayModelId,
-		planModeVercelAiGatewayModelInfo: convertProtoToModelInfo(protoConfig.planModeVercelAiGatewayModelInfo),
+		planModeOcaModelId: protoConfig.planModeOcaModelId,
+		planModeOcaModelInfo: convertProtoOcaModelInfoToOcaModelInfo(protoConfig.planModeOcaModelInfo),
+		planModeAihubmixModelId: protoConfig.planModeAihubmixModelId,
+		planModeAihubmixModelInfo: convertProtoToOpenAiCompatibleModelInfo(protoConfig.planModeAihubmixModelInfo),
+		planModeHicapModelId: protoConfig.planModeHicapModelId,
+		planModeHicapModelInfo: convertProtoToModelInfo(protoConfig.planModeHicapModelInfo),
+		planModeNousResearchModelId: protoConfig.planModeNousResearchModelId,
 
 		// Act mode configurations
 		actModeApiProvider:
@@ -626,7 +732,12 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		actModeHuaweiCloudMaasModelId: protoConfig.actModeHuaweiCloudMaasModelId,
 		actModeHuaweiCloudMaasModelInfo: convertProtoToModelInfo(protoConfig.actModeHuaweiCloudMaasModelInfo),
 		actModeSapAiCoreDeploymentId: protoConfig.actModeSapAiCoreDeploymentId,
-		actModeVercelAiGatewayModelId: protoConfig.actModeVercelAiGatewayModelId,
-		actModeVercelAiGatewayModelInfo: convertProtoToModelInfo(protoConfig.actModeVercelAiGatewayModelInfo),
+		actModeOcaModelId: protoConfig.actModeOcaModelId,
+		actModeOcaModelInfo: convertProtoOcaModelInfoToOcaModelInfo(protoConfig.actModeOcaModelInfo),
+		actModeAihubmixModelId: protoConfig.actModeAihubmixModelId,
+		actModeAihubmixModelInfo: convertProtoToOpenAiCompatibleModelInfo(protoConfig.actModeAihubmixModelInfo),
+		actModeHicapModelId: protoConfig.actModeHicapModelId,
+		actModeHicapModelInfo: convertProtoToModelInfo(protoConfig.actModeHicapModelInfo),
+		actModeNousResearchModelId: protoConfig.actModeNousResearchModelId,
 	}
 }
